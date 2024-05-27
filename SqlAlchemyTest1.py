@@ -1,32 +1,9 @@
-"""
-    Initializes a new instance of the Repository class.
+from database.database_utils import initialize_engine, create_session, create_tables, add_users, query_underage_users, query_adult_users,update_user_age,delete_users
+from models.user import User
 
-    Args:
-        logger: The logger object for logging.
-        session: The session object for database operations.
-        helper: The helper object for utility functions.
-"""
-
-from sqlalchemy import create_engine, Column, String, Integer
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-
-engine = create_engine('sqlite:///cousinsForTest.db', echo=True)
-
-Base = declarative_base()
-# comentario vazio
-# Define modelo da tabela
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    age = Column(Integer)
-
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
+engine = initialize_engine('sqlite:///cousinsForTest.db', echo=True)
+Session = create_session(engine)
+create_tables(engine)
 
 new_users = [
     User(name='Vinicius', age=22),
@@ -36,23 +13,22 @@ new_users = [
     User(name='Caio', age=16)
 ]
 
-# atribui dados exemplo a tabela caso nao já existam.
+# popula a lista com usuarios exemplo caso nao ja existam
 with Session() as session:
-    for new_user in new_users:
-        existing_user = session.query(User).filter(User.name == new_user.name).first()
-        if not existing_user:
-            session.add(new_user)
+    add_users(session, new_users)
 
-    session.commit()
-
-# filtra usuarios com base na idade 
+# filtra usuarios pela idade
 with Session() as session:
-    underage_users = session.query(User).filter(User.age < 18).all()
-    print("Users younger than 18 years:")
+    underage_users = query_underage_users(session)
+    print("Usuarios com menos de 18 anos:")
     for user in underage_users:
         print(f"User: {user.name}, Age: {user.age}")
 
-    adult_users = session.query(User).filter(User.age >= 18).all()
-    print("\nUsers with at least 18 years:")
+    adult_users = query_adult_users(session)
+    print("\nUsuarios com pelo menos de 18 anos:")
     for user in adult_users:
         print(f"User: {user.name}, Age: {user.age}")
+
+# deleta os usuarios da lista
+with Session() as session:
+    delete_users(session, new_users)
