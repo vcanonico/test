@@ -15,7 +15,7 @@ from sqlalchemy.ext.declarative import declarative_base
 engine = create_engine('sqlite:///cousinsForTest.db', echo=True)
 
 Base = declarative_base()
-
+# comentario vazio
 # Define modelo da tabela
 class User(Base):
     __tablename__ = 'users'
