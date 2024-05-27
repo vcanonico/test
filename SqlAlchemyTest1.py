@@ -11,13 +11,12 @@ from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-# Create an engine
-engine = create_engine('sqlite:///cousinsForTest.db', echo=True)  # Echo will show SQL queries
 
-# Define a base class
+engine = create_engine('sqlite:///cousinsForTest.db', echo=True)
+
 Base = declarative_base()
-
-# Define your model
+# comentario vazio
+# Define modelo da tabela
 class User(Base):
     __tablename__ = 'users'
 
@@ -25,28 +24,10 @@ class User(Base):
     name = Column(String)
     age = Column(Integer)
 
-# Create tables
 Base.metadata.create_all(engine)
 
-# Create a session
-session = sessionmaker(bind=engine)
-'''
-# Define the name of the user you want to delete
-user_name_to_delete = 'Heitor'  # Replace with the name of the user you want to delete
-with Session() as session:
-    # Query the user by name
-    user_to_delete = session.query(User).filter(User.name == user_name_to_delete).first()
+Session = sessionmaker(bind=engine)
 
-    # Check if the user exists
-    if user_to_delete:
-        # Delete the user
-        session.delete(user_to_delete)
-        session.commit()
-        print(f"User '{user_name_to_delete}' deleted successfully.")
-    else:
-        print(f"User '{user_name_to_delete}' not found.")
-'''
-# Create a list of new users
 new_users = [
     User(name='Vinicius', age=22),
     User(name='Carlos', age=20),
@@ -55,23 +36,22 @@ new_users = [
     User(name='Caio', age=16)
 ]
 
-# Populate the table with example rows within a with statement
-with session() as session:
-    # Add all new users in a single statement
-    session.add_all(new_users)
+# atribui dados exemplo a tabela caso nao já existam.
+with Session() as session:
+    for new_user in new_users:
+        existing_user = session.query(User).filter(User.name == new_user.name).first()
+        if not existing_user:
+            session.add(new_user)
 
-    # Commit the transaction to save changes
     session.commit()
 
-# Query users younger than 18 years
-with session() as session:
+# filtra usuarios com base na idade 
+with Session() as session:
     underage_users = session.query(User).filter(User.age < 18).all()
     print("Users younger than 18 years:")
     for user in underage_users:
         print(f"User: {user.name}, Age: {user.age}")
 
-# Query users with at least 18 years
-with session() as session:
     adult_users = session.query(User).filter(User.age >= 18).all()
     print("\nUsers with at least 18 years:")
     for user in adult_users:
