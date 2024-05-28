@@ -30,6 +30,6 @@ with Session() as session:
         print(f"User: {user.name}, Age: {user.age}")
 
 # deleta os usuarios da lista
-usernames_to_delete = [user.name for user in new_users]
 with Session() as session:
+    usernames_to_delete = [user.name for user in new_users]
     delete_users(session, usernames_to_delete)
