@@ -1,4 +1,12 @@
-from database.database_utils import initialize_engine, create_session, create_tables, add_users, query_underage_users, query_adult_users,update_user_age,delete_users
+from database.database_utils import (
+    initialize_engine,
+    create_session,
+    create_tables,
+    add_users,
+    update_user_age,
+    delete_users,
+    query_users_ordered_by_age_split_by_18_years
+)
 from models.user import User
 
 engine = initialize_engine('sqlite:///cousinsForTest.db', echo=True)
@@ -10,26 +18,36 @@ new_users = [
     User(name='Carlos', age=20),
     User(name='Vitor', age=24),
     User(name='Heitor', age=11),
-    User(name='Caio', age=16)
+    User(name='Caio', age=16),
 ]
 
-# popula a lista com usuarios exemplo caso nao ja existam
+# Adiciona usuarios
 with Session() as session:
     add_users(session, new_users)
+    session.commit()
 
-# filtra usuarios pela idade
+# filtra usuarios pela idade, separando entre maiores e menores de 18 anos.
 with Session() as session:
-    underage_users = query_underage_users(session)
-    print("Usuarios com menos de 18 anos:")
+    underage_users, adult_users = query_users_ordered_by_age_split_by_18_years(session)
+
+    print("Usuarios com menos de 18 anos (ordenados por idade):")
     for user in underage_users:
         print(f"User: {user.name}, Age: {user.age}")
 
-    adult_users = query_adult_users(session)
-    print("\nUsuarios com pelo menos de 18 anos:")
+    print("\nUsuarios com pelo menos 18 anos (ordenados por idade):")
     for user in adult_users:
         print(f"User: {user.name}, Age: {user.age}")
 
-# deleta os usuarios da lista
+
+users_to_delete = [
+    User(name='Vinicius', age=22),
+    User(name='Carlos', age=20),
+    User(name='Vitor', age=24),
+    User(name='Heitor', age=11),
+    User(name='Caio', age=16),
+]
+# Deleta usuarios escolhidos
 with Session() as session:
-    usernames_to_delete = [user.name for user in new_users]
+    usernames_to_delete = [user.name for user in users_to_delete]
     delete_users(session, usernames_to_delete)
+    session.commit()

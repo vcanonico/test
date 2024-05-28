@@ -1,6 +1,16 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from models.user import User  
+
+def query_users_ordered_by_age_split_by_18_years(session):
+    """filtra usuarios pela idade, retornando listas com os menores e maiores de 18, respectivamente."""
+    stmt = select(User).order_by(User.age)
+    users = session.execute(stmt).scalars().all()
+
+    underage_users = [user for user in users if user.age < 18]
+    adult_users = [user for user in users if user.age >= 18]
+
+    return underage_users, adult_users
 
 def initialize_engine(database_url, echo=False):
     """initializa a engine"""
