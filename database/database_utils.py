@@ -12,6 +12,13 @@ def query_users_ordered_by_age_split_by_18_years(session):
 
     return underage_users, adult_users
 
+def query_users_by_income_and_idle_money(session, min_income, min_avg_idle_money):
+    """filtra usuarios com as quantidades minimas passadas"""
+    return session.query(User).filter(
+        User.income > min_income,
+        User.avg_idle_money >= min_avg_idle_money
+    ).all()
+
 def initialize_engine(database_url, echo=False):
     """initializa a engine"""
     return create_engine(database_url, echo=echo)
