@@ -6,7 +6,8 @@ from database.database_utils import (
     update_user_age,
     delete_users,
     query_users_ordered_by_age_split_by_18_years,
-    query_users_by_income_and_idle_money
+    query_users_by_income_and_idle_money,
+    recommend_investment_profile
 )
 from models.user import User
 
@@ -46,8 +47,10 @@ with Session() as session:
 
     print(f"\nUsuarios com renda acima de {min_income} e pelo menos {min_avg_idle_money} de dinheiro ocioso médio:")
     for user in wealthy_users:
+        investment_profile = recommend_investment_profile(user)
         print(f"User: {user.name}, Age: {user.age}, Income: {user.income}, Avg Idle Money: {user.avg_idle_money}")
-
+        print(f"perfil recomendado: {investment_profile}")
+        print("-" * 50)
 
 users_to_delete = [
     User(name='Vinicius', age=22, income=4500.0, avg_idle_money=500.0),

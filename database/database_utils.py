@@ -2,6 +2,8 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 from models.user import User  
 
+
+
 def query_users_ordered_by_age_split_by_18_years(session):
     """filtra usuarios pela idade, retornando listas com os menores e maiores de 18, respectivamente."""
     stmt = select(User).order_by(User.age)
@@ -11,6 +13,18 @@ def query_users_ordered_by_age_split_by_18_years(session):
     adult_users = [user for user in users if user.age >= 18]
 
     return underage_users, adult_users
+
+def recommend_investment_profile(user):
+    """
+    Recomenda perfil de investimento baseado nos dados financeiros do usuario
+    """
+    if user.income < renda_minima_para__perfil_conservador or user.avg_idle_money < dinheiro_ocioso_minimo_para_perfil_conservador:
+        return "Não há perfil de investimentos recomendado"
+    elif user.income < renda_minima_para_perfil_misto or user.avg_idle_money < dinheiro_ocioso_minimo_para_perfil_misto:
+        return "Recomendado perfil conservador com foco em tesouro e cdb"
+    else:
+        return "Recomendado carteira mista, contando com tesouro e cdbs, além de renda fixa e ações blue chips"
+
 
 def query_users_by_income_and_idle_money(session, min_income, min_avg_idle_money):
     """filtra usuarios com as quantidades minimas passadas"""
@@ -57,6 +71,20 @@ def update_user_age(session, username, new_age):
         user.age = new_age
         session.commit()
 
+def update_user_income(session, username, new_income):
+    """atualiza a idade de um usuario"""
+    user = session.query(User).filter(User.name == username).first()
+    if user:
+        user.income = new_income
+        session.commit()
+
+def update_user_idle_money(session, username, new_idle_money):
+    """atualiza a idade de um usuario"""
+    user = session.query(User).filter(User.name == username).first()
+    if user:
+        user.avg_idle_money = new_idle_money
+        session.commit()
+
 def query_underage_users(session):
     """filtra usuarios com menos de 18 anos"""
     return session.query(User).filter(User.age < 18).all()
@@ -64,3 +92,8 @@ def query_underage_users(session):
 def query_adult_users(session):
     """filtra usuarios com pelo menos 18 anos"""
     return session.query(User).filter(User.age >= 18).all()
+
+renda_minima_para__perfil_conservador = 2000
+dinheiro_ocioso_minimo_para_perfil_conservador = 500
+renda_minima_para_perfil_misto = 5000
+dinheiro_ocioso_minimo_para_perfil_misto = 1500
