@@ -1,11 +1,15 @@
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
-from models.user import User  
+from models import Base, User, Investment, SubInvestment
 
-
+# Constants for investment profile recommendation
+renda_minima_para_perfil_conservador = 2000
+dinheiro_ocioso_minimo_para_perfil_conservador = 500
+renda_minima_para_perfil_misto = 5000
+dinheiro_ocioso_minimo_para_perfil_misto = 1500
 
 def query_users_ordered_by_age_split_by_18_years(session):
-    """filtra usuarios pela idade, retornando listas com os menores e maiores de 18, respectivamente."""
+    """Filters users by age, returning lists of users under and over 18, respectively."""
     stmt = select(User).order_by(User.age)
     users = session.execute(stmt).scalars().all()
 
@@ -16,37 +20,36 @@ def query_users_ordered_by_age_split_by_18_years(session):
 
 def recommend_investment_profile(user):
     """
-    Recomenda perfil de investimento baseado nos dados financeiros do usuario
+    Recommends an investment profile based on the user's financial data.
     """
-    if user.income < renda_minima_para__perfil_conservador or user.avg_idle_money < dinheiro_ocioso_minimo_para_perfil_conservador:
+    if user.income < renda_minima_para_perfil_conservador or user.avg_idle_money < dinheiro_ocioso_minimo_para_perfil_conservador:
         return "Não há perfil de investimentos recomendado"
     elif user.income < renda_minima_para_perfil_misto or user.avg_idle_money < dinheiro_ocioso_minimo_para_perfil_misto:
         return "Recomendado perfil conservador com foco em tesouro e cdb"
     else:
         return "Recomendado carteira mista, contando com tesouro e cdbs, além de renda fixa e ações blue chips"
 
-
 def query_users_by_income_and_idle_money(session, min_income, min_avg_idle_money):
-    """filtra usuarios com as quantidades minimas passadas"""
+    """Filters users by minimum income and average idle money."""
     return session.query(User).filter(
         User.income > min_income,
         User.avg_idle_money >= min_avg_idle_money
     ).all()
 
 def initialize_engine(database_url, echo=False):
-    """initializa a engine"""
+    """Initializes the engine."""
     return create_engine(database_url, echo=echo)
 
 def create_session(engine):
-    """Cria a session factory."""
+    """Creates the session factory."""
     return sessionmaker(bind=engine)
 
 def create_tables(engine):
-    """cria a tabela do banco de dados."""
-    User.metadata.create_all(engine)
+    """Creates the database tables."""
+    Base.metadata.create_all(engine)
 
 def add_users(session, users):
-    """Adiciona usuarios ao banco de dados."""
+    """Adds users to the database."""
     for user in users:
         existing_user = session.query(User).filter(User.name == user.name).first()
         if not existing_user:
@@ -54,46 +57,41 @@ def add_users(session, users):
     session.commit()
 
 def delete_users(session, usernames):
-    """Deleta usuarios do banco de dados."""
+    """Deletes users from the database."""
     for username in usernames:
         user_to_delete = session.query(User).filter(User.name == username).first()
         if user_to_delete:
             session.delete(user_to_delete)
-            print(f"Deletado usuario '{username}' do banco de dados.")
+            print(f"Deleted user '{username}' from the database.")
         else:
-            print(f"usuario '{username}' não encontrado no banco de dados.")
+            print(f"User '{username}' not found in the database.")
     session.commit()
 
 def update_user_age(session, username, new_age):
-    """atualiza a idade de um usuario"""
+    """Updates a user's age."""
     user = session.query(User).filter(User.name == username).first()
     if user:
         user.age = new_age
         session.commit()
 
 def update_user_income(session, username, new_income):
-    """atualiza a idade de um usuario"""
+    """Updates a user's income."""
     user = session.query(User).filter(User.name == username).first()
     if user:
         user.income = new_income
         session.commit()
 
 def update_user_idle_money(session, username, new_idle_money):
-    """atualiza a idade de um usuario"""
+    """Updates a user's average idle money."""
     user = session.query(User).filter(User.name == username).first()
     if user:
         user.avg_idle_money = new_idle_money
         session.commit()
 
 def query_underage_users(session):
-    """filtra usuarios com menos de 18 anos"""
+    """Filters users under 18 years old."""
     return session.query(User).filter(User.age < 18).all()
 
 def query_adult_users(session):
-    """filtra usuarios com pelo menos 18 anos"""
+    """Filters users 18 years and older."""
     return session.query(User).filter(User.age >= 18).all()
-
-renda_minima_para__perfil_conservador = 2000
-dinheiro_ocioso_minimo_para_perfil_conservador = 500
-renda_minima_para_perfil_misto = 5000
-dinheiro_ocioso_minimo_para_perfil_misto = 1500
