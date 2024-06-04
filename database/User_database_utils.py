@@ -1,12 +1,8 @@
-from sqlalchemy import create_engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
-from models import Base, User, Investment, SubInvestment
+from models import User
+from Base_database_utils import *
 
-# Constants for investment profile recommendation
-renda_minima_para_perfil_conservador = 2000
-dinheiro_ocioso_minimo_para_perfil_conservador = 500
-renda_minima_para_perfil_misto = 5000
-dinheiro_ocioso_minimo_para_perfil_misto = 1500
 
 def query_users_ordered_by_age_split_by_18_years(session):
     """Filters users by age, returning lists of users under and over 18, respectively."""
@@ -35,18 +31,6 @@ def query_users_by_income_and_idle_money(session, min_income, min_avg_idle_money
         User.income > min_income,
         User.avg_idle_money >= min_avg_idle_money
     ).all()
-
-def initialize_engine(database_url, echo=False):
-    """Initializes the engine."""
-    return create_engine(database_url, echo=echo)
-
-def create_session(engine):
-    """Creates the session factory."""
-    return sessionmaker(bind=engine)
-
-def create_tables(engine):
-    """Creates the database tables."""
-    Base.metadata.create_all(engine)
 
 def add_users(session, users):
     """Adds users to the database."""
