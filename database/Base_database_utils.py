@@ -26,23 +26,21 @@ def print_all_entries(session, model_class):
     for entry in entries:
         print(entry)
 
-def add_entries_if_not_exists(session, model_class, entries):
+def add_entries_if_not_exists(session, model_class, entries, uid_column):
     """
-    Adds entries to the database if an identical entry does not already exist. nao funciona por enquanto
+    Adds entries to the database if an identical entry does not already exist based on a unique identifier column.
     
     :param session: SQLAlchemy session object
     :param model_class: SQLAlchemy model class
     :param entries: List of entries to be added, each entry being an instance of model_class
+    :param uid_column: The unique identifier column to check for existing entries
     """
     for entry in entries:
-        # Get the column names and values of the entry
-        entry_attrs = {attr.key: getattr(entry, attr.key) for attr in inspect(entry).mapper.column_attrs if not attr.columns[0].primary_key}
+        # Get the unique identifier value of the entry
+        uid_value = getattr(entry, uid_column)
         
-        # Build the filter criteria dynamically
-        filter_criteria = [getattr(model_class, attr) == value for attr, value in entry_attrs.items()]
-        
-        # Check if an identical entry already exists
-        existing_entry = session.query(model_class).filter(*filter_criteria).first()
+        # Check if an entry with the same unique identifier already exists
+        existing_entry = session.query(model_class).filter_by(**{uid_column: uid_value}).first()
         
         if existing_entry:
             print(f"Existing entry found: {entry}")
@@ -54,23 +52,21 @@ def add_entries_if_not_exists(session, model_class, entries):
     session.commit()
 
 
-def delete_entries_if_exists(session, model_class, entries):
+def delete_entries_if_exists(session, model_class, entries, uid_column):
     """
     Deletes entries from the database if an identical entry exists.
     
     :param session: SQLAlchemy session object
     :param model_class: SQLAlchemy model class
     :param entries: List of entries to be deleted, each entry being an instance of model_class
+    :param uid_column: Name of the column to be used as the unique identifier
     """
     for entry in entries:
-        # Get the column names and values of the entry
-        entry_attrs = {attr.key: getattr(entry, attr.key) for attr in inspect(entry).mapper.column_attrs}
+        # Get the column value of the unique identifier
+        uid_value = getattr(entry, uid_column)
         
-        # Build the filter criteria dynamically
-        filter_criteria = [getattr(model_class, attr) == value for attr, value in entry_attrs.items()]
-        
-        # Check if an identical entry exists
-        existing_entry = session.query(model_class).filter(*filter_criteria).first()
+        # Check if an identical entry exists based on the unique identifier
+        existing_entry = session.query(model_class).filter(getattr(model_class, uid_column) == uid_value).first()
         
         if existing_entry:
             session.delete(existing_entry)

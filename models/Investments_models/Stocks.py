@@ -19,4 +19,4 @@ class Stocks(BaseInvestment):
         return (f"<Stocks(id={self.id}, profit_rate={self.profit_rate}, profit_rate_measure={self.profit_rate_measure}, "
                 f"profit_type={self.profit_type}, min_investment={self.min_investment}, min_movement={self.min_movement}, "
                 f"liquidity_days={self.liquidity_days}, estimated_risk={self.estimated_risk}, type={self.type}, "
-                f"stock_types={self.stock_types}, fund_name={self.fund_name}, stock_market={self.stock_market})>")
+                f"stock_types={self.stock_types}, fund_name={self.fund_name}, stock_market={self.stock_market}), uid={self.uid}>")

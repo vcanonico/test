@@ -26,7 +26,8 @@ example_stocks = [
         estimated_risk='Low',
         stock_types='Blue_chip',
         fund_name='Blue Chip Fund',
-        stock_market='NYSE'
+        stock_market='NYSE',
+        uid='Blue Chip Fund'
     ),
     Stocks(
         profit_rate=7.0,
@@ -38,7 +39,8 @@ example_stocks = [
         estimated_risk='Medium',
         stock_types='Normal',
         fund_name='Growth Fund',
-        stock_market='NASDAQ'
+        stock_market='NASDAQ',
+        uid='Growth Fund'
     ),
     Stocks(
         profit_rate=10.0,
@@ -50,7 +52,8 @@ example_stocks = [
         estimated_risk='High',
         stock_types='Start_up,Unicorn',
         fund_name='Tech Innovations Fund',
-        stock_market='NYSE'
+        stock_market='NYSE',
+        uid='Tech Innovations Fund'
     )
 ]
 
@@ -66,7 +69,8 @@ example_cdbs = [
         liquidity_days=180,
         estimated_risk='Low',
         expiration_date=datetime(2025, 1, 1),
-        currency='BRL'
+        currency='BRL',
+        uid='CDB_001'
     ),
     CDB(
         profit_rate=6.0,
@@ -77,7 +81,8 @@ example_cdbs = [
         liquidity_days=360,
         estimated_risk='Medium',
         expiration_date=datetime(2026, 6, 1),
-        currency='USD'
+        currency='USD',
+        uid='CDB_002'
     ),
     CDB(
         profit_rate=8.0,
@@ -88,12 +93,13 @@ example_cdbs = [
         liquidity_days=720,
         estimated_risk='High',
         expiration_date=datetime(2027, 12, 1),
-        currency='EUR'
+        currency='EUR',
+        uid='CDB_003'
     )
 ]
 
-add_entries_if_not_exists(session, Stocks, example_stocks)
-add_entries_if_not_exists(session, CDB, example_cdbs)
+add_entries_if_not_exists(session, Stocks, example_stocks, 'uid')
+add_entries_if_not_exists(session, CDB, example_cdbs, 'uid')
 
 # Print all stocks
 print("\nAll Stocks:")

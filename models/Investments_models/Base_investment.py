@@ -14,6 +14,8 @@ class BaseInvestment(Base):
     min_movement: Mapped[float] = mapped_column(Float, nullable=False)
     liquidity_days: Mapped[int] = mapped_column(Integer, nullable=False)
     estimated_risk: Mapped[str] = mapped_column(String(50), nullable=False)
+    uid: Mapped[str] = mapped_column(String(50), nullable=False)
+
 
     # Discriminator column to differentiate between investment types
     type: Mapped[str] = mapped_column(String(50), nullable=False)
