@@ -1,58 +1,66 @@
-"""
-    Initializes a new instance of the Repository class.
+from database.database_utils import (
+    initialize_engine,
+    create_session,
+    create_tables,
+    add_users,
+    update_user_age,
+    delete_users,
+    query_users_ordered_by_age_split_by_18_years,
+    query_users_by_income_and_idle_money,
+    recommend_investment_profile
+)
+from models.user import User
 
-    Args:
-        logger: The logger object for logging.
-        session: The session object for database operations.
-        helper: The helper object for utility functions.
-"""
-
-from sqlalchemy import create_engine, Column, String, Integer
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-
-
-engine = create_engine('sqlite:///cousinsForTest.db', echo=True)
-
-Base = declarative_base()
-# comentario vazio
-# Define modelo da tabela
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    age = Column(Integer)
-
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
+engine = initialize_engine('sqlite:///cousinsForTest.db', echo=True)
+Session = create_session(engine)
+create_tables(engine)
 
 new_users = [
-    User(name='Vinicius', age=22),
-    User(name='Carlos', age=20),
-    User(name='Vitor', age=24),
-    User(name='Heitor', age=11),
-    User(name='Caio', age=16)
+    User(name='Vinicius', age=22, income=4500.0, avg_idle_money=500.0),
+    User(name='Carlos', age=20, income=200.0, avg_idle_money=50.0),
+    User(name='Vitor', age=24, income=5000.0, avg_idle_money=2000.0),
+    User(name='Heitor', age=11, income=0.0, avg_idle_money=0.0),
+    User(name='Caio', age=16, income=0.0, avg_idle_money=0.0),
 ]
 
-# atribui dados exemplo a tabela caso nao já existam.
+# Adiciona usuarios
 with Session() as session:
-    for new_user in new_users:
-        existing_user = session.query(User).filter(User.name == new_user.name).first()
-        if not existing_user:
-            session.add(new_user)
-
+    add_users(session, new_users)
     session.commit()
 
-# filtra usuarios com base na idade 
+# filtra usuarios pela idade, separando entre maiores e menores de 18 anos.
 with Session() as session:
-    underage_users = session.query(User).filter(User.age < 18).all()
-    print("Users younger than 18 years:")
+    underage_users, adult_users = query_users_ordered_by_age_split_by_18_years(session)
+
+    print("Usuarios com menos de 18 anos (ordenados por idade):")
     for user in underage_users:
         print(f"User: {user.name}, Age: {user.age}")
 
-    adult_users = session.query(User).filter(User.age >= 18).all()
-    print("\nUsers with at least 18 years:")
+    print("\nUsuarios com pelo menos 18 anos (ordenados por idade):")
     for user in adult_users:
         print(f"User: {user.name}, Age: {user.age}")
+
+    
+    min_income = 2000.0
+    min_avg_idle_money = 500.0
+    wealthy_users = query_users_by_income_and_idle_money(session, min_income, min_avg_idle_money)
+
+    print(f"\nUsuarios com renda acima de {min_income} e pelo menos {min_avg_idle_money} de dinheiro ocioso médio:")
+    for user in wealthy_users:
+        investment_profile = recommend_investment_profile(user)
+        print(f"User: {user.name}, Age: {user.age}, Income: {user.income}, Avg Idle Money: {user.avg_idle_money}")
+        print(f"perfil recomendado: {investment_profile}")
+        print("-" * 50)
+
+users_to_delete = [
+    User(name='Vinicius', age=22, income=4500.0, avg_idle_money=500.0),
+    User(name='Carlos', age=20, income=200.0, avg_idle_money=50.0),
+    User(name='Vitor', age=24, income=5000.0, avg_idle_money=2000.0),
+    User(name='Heitor', age=11, income=0.0, avg_idle_money=0.0),
+    User(name='Caio', age=16, income=0.0, avg_idle_money=0.0),
+]
+# Deleta usuarios escolhidos
+with Session() as session:
+    usernames_to_delete = [user.name for user in users_to_delete]
+    delete_users(session, usernames_to_delete)
+    session.commit()
